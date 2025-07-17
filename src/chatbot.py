@@ -1,4 +1,7 @@
-"""This module defines the Chatbot application.
+"""
+Author: Anannya Kandhari
+
+This module defines the Chatbot application.
 
 Allows the user to perform balance inquiries and make deposits to their 
 accounts.
@@ -7,8 +10,8 @@ Example:
     $ python src/chatbot.py
 """
 
-__author__ = ""
-__version__ = ""
+__author__ = "Anannya"
+__version__ = "1.0"
 __credits__ = "COMP-1327 Faculty"
 
 ACCOUNTS = {
@@ -25,6 +28,16 @@ VALID_TASKS = [
     "deposit", 
     "exit"
 ]
+def get_account_number():
+    """Prompt user for an account number, validate and return it as int."""
+    account_input = input("Please enter your account number: ")
+    try:
+        account_num = int(account_input)
+    except ValueError:
+        raise TypeError("Account number must be an int type.")
+    if account_num not in ACCOUNTS:
+        raise ValueError("Account number entered does not exist.")
+    return account_num
 
 def chatbot():
     """Performs the Chatbot functionality."""
