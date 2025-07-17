@@ -39,6 +39,39 @@ def get_account_number():
         raise ValueError("Account number entered does not exist.")
     return account_num
 
+def get_amount():
+    """Prompt user to input deposit amount and validate it."""
+    amount_input = input("Enter an amount: ")
+    try:
+        amount = float(amount_input)
+    except ValueError:
+        raise TypeError("Amount must be a numeric type.")
+    if amount <= 0:
+        raise ValueError("Amount must be a value greater than zero.")
+    return amount
+
+def get_balance(account_number):
+    """Return a formatted balance message for the account."""
+    if not isinstance(account_number, int):
+        raise TypeError("Account number must be an int type.")
+    if account_number not in ACCOUNTS:
+        raise ValueError("Account number does not exist.")
+    balance = ACCOUNTS[account_number]['balance']
+    return f"Your current balance for account {account_number} is ${balance:,.2f}."
+
+def make_deposit(account_number, amount):
+    """Deposit amount into the account and return confirmation message."""
+    if not isinstance(account_number, int):
+        raise TypeError("Account number must be an int type.")
+    if account_number not in ACCOUNTS:
+        raise ValueError("Account number does not exist.")
+    if not isinstance(amount, (int, float)):
+        raise ValueError("Amount must be a numeric type.")
+    if amount <= 0:
+        raise ValueError("Amount must be a value greater than zero.")
+    ACCOUNTS[account_number]['balance'] += amount
+    return f"You have made a deposit of ${amount:,.2f} to account {account_number}."
+
 def chatbot():
     """Performs the Chatbot functionality."""
     COMPANY_NAME = "PiXELL River Financial"
