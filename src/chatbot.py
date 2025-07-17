@@ -13,6 +13,10 @@ Example:
 
 import unittest
 from unittest.mock import patch
+from src.chatbot import (
+    ACCOUNTS, VALID_TASKS, get_task, get_account_number,
+    get_amount, get_balance, make_deposit
+)
 
 __author__ = "Anannya"
 __version__ = "1.0"
@@ -21,10 +25,10 @@ __credits__ = "COMP-1327 Faculty"
 class TestChatbot(unittest.TestCase):
 
     # get_task() tests
-    @patch('builtins.input', return_value='exit')
+    @patch('builtins.input', return_value='balance')
     def test_get_task_valid_lowercase(self, mock_input):
         task = get_task()
-        self.assertEqual(task, 'exit')
+        self.assertEqual(task, 'balance')
 
     @patch('builtins.input', return_value='BALANCE')
     def test_get_task_valid_uppercase(self, mock_input):
@@ -92,7 +96,7 @@ class TestChatbot(unittest.TestCase):
 
     def test_get_balance_valid(self):
         account_num = 123456
-        expected = f"Your current balance for account {account_num} is ${ACCOUNTS[account_num]['balance']:,.2f}."
+        expected = f"Your current balance for account {account_num} is ${ACCOUNTS[account_num]:,.2f}."
         actual = get_balance(account_num)
         self.assertEqual(actual, expected)
 
@@ -108,7 +112,7 @@ class TestChatbot(unittest.TestCase):
         self.assertEqual(str(cm.exception), "Account number does not exist.")
 
     def test_make_deposit_non_numeric_amount(self):
-        with self.assertRaises(ValueError) as cm:
+        with self.assertRaises(TypeError) as cm:
             make_deposit(123456, "abc")
         self.assertEqual(str(cm.exception), "Amount must be a numeric type.")
 
@@ -125,9 +129,9 @@ class TestChatbot(unittest.TestCase):
     def test_make_deposit_valid_inputs(self):
         account_num = 123456
         amount = 100
-        original_balance = ACCOUNTS[account_num]['balance']
+        original_balance = ACCOUNTS[account_num]
         msg = make_deposit(account_num, amount)
-        new_balance = ACCOUNTS[account_num]['balance']
+        new_balance = ACCOUNTS[account_num]
         self.assertEqual(msg, f"You have made a deposit of ${amount:,.2f} to account {account_num}.")
         self.assertEqual(new_balance, original_balance + amount)
 
