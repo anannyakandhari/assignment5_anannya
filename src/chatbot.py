@@ -1,87 +1,135 @@
 """
-Author: Anannya Kandhari
+This module defines the TestChatbot class.
 
-This module defines the Chatbot application.
+The TestChatbot class contains unit test methods to test the 
+src.chatbot module functions.
 
-Allows the user to perform balance inquiries and make deposits to their 
-accounts.
+You must execute this module in command-line where your present
+working directory is the root directory of the project.
 
 Example:
-    $ python src/chatbot.py
+    python -m unittest tests/test_chatbot.py
 """
+
+import unittest
+from unittest.mock import patch
 
 __author__ = "Anannya"
 __version__ = "1.0"
 __credits__ = "COMP-1327 Faculty"
 
-ACCOUNTS = {
-    123456: {
-        "balance": 1000.0
-    },
-    789012: {
-        "balance": 2000.0
-    }
-} 
+class TestChatbot(unittest.TestCase):
 
-VALID_TASKS = [
-    "balance", 
-    "deposit", 
-    "exit"
-]
-def get_account_number():
-    """Prompt user for an account number, validate and return it as int."""
-    account_input = input("Please enter your account number: ")
-    try:
-        account_num = int(account_input)
-    except ValueError:
-        raise TypeError("Account number must be an int type.")
-    if account_num not in ACCOUNTS:
-        raise ValueError("Account number entered does not exist.")
-    return account_num
+    # get_task() tests
+    @patch('builtins.input', return_value='exit')
+    def test_get_task_valid_lowercase(self, mock_input):
+        task = get_task()
+        self.assertEqual(task, 'exit')
 
-def get_amount():
-    """Prompt user to input deposit amount and validate it."""
-    amount_input = input("Enter an amount: ")
-    try:
-        amount = float(amount_input)
-    except ValueError:
-        raise TypeError("Amount must be a numeric type.")
-    if amount <= 0:
-        raise ValueError("Amount must be a value greater than zero.")
-    return amount
+    @patch('builtins.input', return_value='BALANCE')
+    def test_get_task_valid_uppercase(self, mock_input):
+        task = get_task()
+        self.assertEqual(task, 'balance')
 
-def get_balance(account_number):
-    """Return a formatted balance message for the account."""
-    if not isinstance(account_number, int):
-        raise TypeError("Account number must be an int type.")
-    if account_number not in ACCOUNTS:
-        raise ValueError("Account number does not exist.")
-    balance = ACCOUNTS[account_number]['balance']
-    return f"Your current balance for account {account_number} is ${balance:,.2f}."
+    @patch('builtins.input', return_value='Withdraw')
+    def test_get_task_invalid(self, mock_input):
+        with self.assertRaises(ValueError) as cm:
+            get_task()
+        self.assertEqual(str(cm.exception), '"withdraw" is an unknown task.')
 
-def make_deposit(account_number, amount):
-    """Deposit amount into the account and return confirmation message."""
-    if not isinstance(account_number, int):
-        raise TypeError("Account number must be an int type.")
-    if account_number not in ACCOUNTS:
-        raise ValueError("Account number does not exist.")
-    if not isinstance(amount, (int, float)):
-        raise ValueError("Amount must be a numeric type.")
-    if amount <= 0:
-        raise ValueError("Amount must be a value greater than zero.")
-    ACCOUNTS[account_number]['balance'] += amount
-    return f"You have made a deposit of ${amount:,.2f} to account {account_number}."
+    # get_account_number() tests
+    @patch('builtins.input', return_value='abc')
+    def test_get_account_number_not_int(self, mock_input):
+        with self.assertRaises(TypeError) as cm:
+            get_account_number()
+        self.assertEqual(str(cm.exception), "Account number must be an int type.")
 
-def chatbot():
-    """Performs the Chatbot functionality."""
-    COMPANY_NAME = "PiXELL River Financial"
+    @patch('builtins.input', return_value='999999')
+    def test_get_account_number_not_exist(self, mock_input):
+        with self.assertRaises(ValueError) as cm:
+            get_account_number()
+        self.assertEqual(str(cm.exception), "Account number entered does not exist.")
 
-    # Print welcome message
-    print(f"Welcome! I'm the {COMPANY_NAME} Chatbot! "
-          f"Let's get chatting!")
+    @patch('builtins.input', return_value='123456')
+    def test_get_account_number_valid(self, mock_input):
+        account_num = get_account_number()
+        self.assertEqual(account_num, 123456)
 
-    # Print thank you message
-    print(f"Thank you for banking with {COMPANY_NAME}.")
+    # get_amount() tests
+    @patch('builtins.input', return_value='abc')
+    def test_get_amount_not_numeric(self, mock_input):
+        with self.assertRaises(TypeError) as cm:
+            get_amount()
+        self.assertEqual(str(cm.exception), "Amount must be a numeric type.")
+
+    @patch('builtins.input', return_value='0')
+    def test_get_amount_zero(self, mock_input):
+        with self.assertRaises(ValueError) as cm:
+            get_amount()
+        self.assertEqual(str(cm.exception), "Amount must be a value greater than zero.")
+
+    @patch('builtins.input', return_value='-10')
+    def test_get_amount_negative(self, mock_input):
+        with self.assertRaises(ValueError) as cm:
+            get_amount()
+        self.assertEqual(str(cm.exception), "Amount must be a value greater than zero.")
+
+    @patch('builtins.input', return_value='100.50')
+    def test_get_amount_valid(self, mock_input):
+        amount = get_amount()
+        self.assertEqual(amount, 100.50)
+
+    # get_balance() tests
+    def test_get_balance_not_int(self):
+        with self.assertRaises(TypeError) as cm:
+            get_balance("abc")
+        self.assertEqual(str(cm.exception), "Account number must be an int type.")
+
+    def test_get_balance_not_exist(self):
+        with self.assertRaises(ValueError) as cm:
+            get_balance(999999)
+        self.assertEqual(str(cm.exception), "Account number does not exist.")
+
+    def test_get_balance_valid(self):
+        account_num = 123456
+        expected = f"Your current balance for account {account_num} is ${ACCOUNTS[account_num]['balance']:,.2f}."
+        actual = get_balance(account_num)
+        self.assertEqual(actual, expected)
+
+    # make_deposit() tests
+    def test_make_deposit_account_number_not_int(self):
+        with self.assertRaises(TypeError) as cm:
+            make_deposit("abc", 100)
+        self.assertEqual(str(cm.exception), "Account number must be an int type.")
+
+    def test_make_deposit_account_number_not_exist(self):
+        with self.assertRaises(ValueError) as cm:
+            make_deposit(999999, 100)
+        self.assertEqual(str(cm.exception), "Account number does not exist.")
+
+    def test_make_deposit_non_numeric_amount(self):
+        with self.assertRaises(ValueError) as cm:
+            make_deposit(123456, "abc")
+        self.assertEqual(str(cm.exception), "Amount must be a numeric type.")
+
+    def test_make_deposit_amount_zero(self):
+        with self.assertRaises(ValueError) as cm:
+            make_deposit(123456, 0)
+        self.assertEqual(str(cm.exception), "Amount must be a value greater than zero.")
+
+    def test_make_deposit_amount_negative(self):
+        with self.assertRaises(ValueError) as cm:
+            make_deposit(123456, -10)
+        self.assertEqual(str(cm.exception), "Amount must be a value greater than zero.")
+
+    def test_make_deposit_valid_inputs(self):
+        account_num = 123456
+        amount = 100
+        original_balance = ACCOUNTS[account_num]['balance']
+        msg = make_deposit(account_num, amount)
+        new_balance = ACCOUNTS[account_num]['balance']
+        self.assertEqual(msg, f"You have made a deposit of ${amount:,.2f} to account {account_num}.")
+        self.assertEqual(new_balance, original_balance + amount)
 
 if __name__ == "__main__":
-    chatbot()
+    unittest.main()
